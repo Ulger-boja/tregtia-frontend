@@ -9,7 +9,13 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('tregtia_token');
+  let token = localStorage.getItem('tregtia_token');
+  if (!token) {
+    try {
+      const stored = JSON.parse(localStorage.getItem('tregtia_auth') || '{}');
+      token = stored?.state?.token;
+    } catch {}
+  }
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
