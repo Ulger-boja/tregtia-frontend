@@ -1,0 +1,66 @@
+{
+  "nav": {
+    "home": "Home",
+    "categories": "Categories",
+    "postAd": "Post Ad",
+    "favorites": "Favorites",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "register": "Register",
+    "search": "Search..."
+  },
+  "home": {
+    "hero": "Buy & sell anything in Albania",
+    "heroSub": "The modern marketplace for everything — electronics, vehicles, properties, jobs, and more.",
+    "trending": "Trending",
+    "recent": "Recent Listings",
+    "viewAll": "View All"
+  },
+  "common": {
+    "results": "results",
+    "filters": "Filters",
+    "sort": "Sort",
+    "newest": "Newest",
+    "cheapest": "Cheapest",
+    "expensive": "Most Expensive",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "noResults": "No results found",
+    "all": "All",
+    "leke": "Lekë",
+    "eur": "EUR"
+  },
+  "categories": {
+    "vehicles": "Vehicles",
+    "properties": "Properties",
+    "electronics": "Electronics",
+    "furniture": "Furniture",
+    "fashion": "Fashion",
+    "jobs": "Jobs",
+    "services": "Services",
+    "pets": "Pets",
+    "sports": "Sports",
+    "other": "Other"
+  },
+  "listing": {
+    "postedBy": "Posted by",
+    "postedOn": "Posted on",
+    "contact": "Contact",
+    "description": "Description",
+    "price": "Price",
+    "location": "Location",
+    "negotiable": "Negotiable",
+    "exchange": "Exchange possible",
+    "views": "views"
+  },
+  "footer": {
+    "about": "About",
+    "contact": "Contact",
+    "terms": "Terms",
+    "privacy": "Privacy"
+  }
+}

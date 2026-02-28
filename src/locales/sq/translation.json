@@ -1,0 +1,66 @@
+{
+  "nav": {
+    "home": "Kryefaqja",
+    "categories": "Kategoritë",
+    "postAd": "Posto Njoftim",
+    "favorites": "Të preferuarat",
+    "dashboard": "Paneli",
+    "login": "Hyr",
+    "register": "Regjistrohu",
+    "search": "Kërko..."
+  },
+  "home": {
+    "hero": "Bli & shit gjithçka në Shqipëri",
+    "heroSub": "Tregu modern për gjithçka — elektronikë, automjete, prona, punë, e më shumë.",
+    "trending": "Në trend",
+    "recent": "Njoftimet e fundit",
+    "viewAll": "Shiko të gjitha"
+  },
+  "common": {
+    "results": "rezultate",
+    "filters": "Filtra",
+    "sort": "Rendit",
+    "newest": "Më të rejat",
+    "cheapest": "Më të lirat",
+    "expensive": "Më të shtrenjtat",
+    "save": "Ruaj",
+    "cancel": "Anulo",
+    "delete": "Fshi",
+    "edit": "Ndrysho",
+    "loading": "Duke ngarkuar...",
+    "error": "Diçka shkoi keq",
+    "noResults": "Nuk u gjet asnjë rezultat",
+    "all": "Të gjitha",
+    "leke": "Lekë",
+    "eur": "EUR"
+  },
+  "categories": {
+    "vehicles": "Automjete",
+    "properties": "Prona",
+    "electronics": "Elektronikë",
+    "furniture": "Mobilje",
+    "fashion": "Modë",
+    "jobs": "Punë",
+    "services": "Shërbime",
+    "pets": "Kafshë",
+    "sports": "Sport",
+    "other": "Të tjera"
+  },
+  "listing": {
+    "postedBy": "Postuar nga",
+    "postedOn": "Postuar më",
+    "contact": "Kontakto",
+    "description": "Përshkrimi",
+    "price": "Çmimi",
+    "location": "Vendndodhja",
+    "negotiable": "I diskutueshëm",
+    "exchange": "Mundësi shkëmbimi",
+    "views": "shikime"
+  },
+  "footer": {
+    "about": "Rreth nesh",
+    "contact": "Kontakti",
+    "terms": "Kushtet",
+    "privacy": "Privatësia"
+  }
+}
