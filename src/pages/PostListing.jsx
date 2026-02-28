@@ -2,10 +2,12 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Upload, X, ChevronRight, ChevronLeft, Check, MapPin, Tag, Camera, FileText, Eye } from 'lucide-react';
-import { CATEGORIES, CITIES } from '../data/mockData';
+import { CITIES } from '../data/mockData';
 import { formatPrice } from '../utils/formatters';
+import { getCategories, createListing } from '../api';
 import useAuthStore from '../store/authStore';
 import toast from 'react-hot-toast';
+import { useEffect } from 'react';
 
 const STEPS = ['category', 'details', 'photos', 'location', 'review'];
 const STEP_ICONS = [Tag, FileText, Camera, MapPin, Eye];
@@ -19,10 +21,15 @@ export default function PostListing() {
 
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({
     categoryId: '', subcategoryId: '', title: '', description: '', price: '', currency: 'ALL',
     negotiable: false, exchange: false, city: 'Tiranë', neighborhood: '', address: '', images: [],
   });
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch(() => {});
+  }, []);
 
   if (!isAuthenticated) {
     navigate('/login');
@@ -30,7 +37,7 @@ export default function PostListing() {
   }
 
   const update = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
-  const activeCat = CATEGORIES.find(c => c.id === form.categoryId);
+  const activeCat = categories.find(c => c.id === form.categoryId);
 
   const handleFiles = (files) => {
     const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
@@ -51,13 +58,30 @@ export default function PostListing() {
     setStep(s => Math.min(s + 1, STEPS.length - 1));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      const fd = new FormData();
+      fd.append('title', form.title);
+      fd.append('description', form.description);
+      fd.append('categoryId', form.subcategoryId || form.categoryId);
+      fd.append('city', form.city);
+      if (form.price) fd.append('price', form.price);
+      fd.append('currency', form.currency);
+      fd.append('negotiable', form.negotiable);
+      fd.append('exchange', form.exchange);
+      if (form.neighborhood) fd.append('neighborhood', form.neighborhood);
+      if (form.address) fd.append('address', form.address);
+      form.images.forEach(img => { if (img.file) fd.append('images', img.file); });
+
+      const listing = await createListing(fd);
       toast.success(isEn ? 'Listing published!' : 'Njoftimi u publikua!');
-      navigate('/dashboard');
+      navigate(`/listing/${listing.id}`);
+    } catch (err) {
+      toast.error(err.message || 'Error');
+    } finally {
       setSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -86,7 +110,7 @@ export default function PostListing() {
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-4">{isEn ? 'Select Category' : 'Zgjidhni Kategorinë'}</h2>
               <div className="grid grid-cols-2 gap-3">
-                {CATEGORIES.map(cat => (
+                {categories.map(cat => (
                   <button key={cat.id} onClick={() => { update('categoryId', cat.id); update('subcategoryId', ''); }}
                     className={`p-4 rounded-xl border text-left transition ${form.categoryId === cat.id ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
                     <p className="font-medium text-sm">{isEn ? cat.name_en : cat.name_sq}</p>

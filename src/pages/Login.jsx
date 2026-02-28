@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import useAuthStore from '../store/authStore';
+import { login as loginApi } from '../api';
 import toast from 'react-hot-toast';
-import { MOCK_USERS } from '../data/mockData';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -17,14 +17,16 @@ export default function Login() {
     e.preventDefault();
     if (!form.email || !form.password) return toast.error('Plotëso të gjitha fushat');
     setLoading(true);
-    // Mock login
-    setTimeout(() => {
-      const mockUser = { ...MOCK_USERS[0], email: form.email };
-      login(mockUser, 'mock-jwt-token-tregtia');
+    try {
+      const data = await loginApi(form);
+      login(data.user, data.token);
       toast.success('Mirë se erdhe!');
       navigate('/dashboard');
+    } catch (err) {
+      toast.error(err.message || 'Gabim në hyrje');
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -57,10 +59,7 @@ export default function Login() {
             {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><LogIn size={18} />{t('nav.login')}</>}
           </button>
         </form>
-
-        <p className="text-center text-sm text-gray-400 mt-4">
-          Nuk ke llogari? <Link to="/register" className="text-primary-600 font-medium hover:underline">{t('nav.register')}</Link>
-        </p>
+        <p className="text-center text-sm text-gray-400 mt-4">Nuk ke llogari? <Link to="/register" className="text-primary-600 font-medium hover:underline">{t('nav.register')}</Link></p>
       </div>
     </div>
   );

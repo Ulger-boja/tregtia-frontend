@@ -1,14 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Search, Car, Home as HomeIcon, Smartphone, Sofa, Shirt, Briefcase, Wrench, PawPrint, Dumbbell, MoreHorizontal, ArrowRight, TrendingUp, MapPin } from 'lucide-react';
-import { MOCK_LISTINGS, CATEGORIES, CITIES } from '../data/mockData';
+import { getListings, getCategories } from '../api';
+import { CITIES } from '../data/mockData';
 import ListingCard from '../components/ListingCard';
-import { useState } from 'react';
 
 const CAT_ICONS = { vehicles: Car, properties: HomeIcon, electronics: Smartphone, furniture: Sofa, fashion: Shirt, jobs: Briefcase, services: Wrench, pets: PawPrint, sports: Dumbbell, other: MoreHorizontal };
 const CAT_COLORS = { vehicles: 'bg-blue-50 text-blue-600', properties: 'bg-amber-50 text-amber-600', electronics: 'bg-violet-50 text-violet-600', furniture: 'bg-emerald-50 text-emerald-600', fashion: 'bg-pink-50 text-pink-600', jobs: 'bg-cyan-50 text-cyan-600', services: 'bg-orange-50 text-orange-600', pets: 'bg-lime-50 text-lime-600', sports: 'bg-rose-50 text-rose-600', other: 'bg-gray-100 text-gray-600' };
 
-const POPULAR_SEARCHES = ['iPhone', 'Mercedes', 'Apartament Tiranë', 'PS5', 'Punë', 'Biçikletë'];
+const POPULAR_SEARCHES = ['iPhone', 'Mercedes', 'Apartament', 'PS5', 'Punë', 'Biçikletë'];
 
 export default function Home() {
   const { t, i18n } = useTranslation();
@@ -16,8 +17,22 @@ export default function Home() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
-  const recent = MOCK_LISTINGS.slice(0, 8);
-  const featured = MOCK_LISTINGS.filter(l => l.views > 200).slice(0, 4);
+  const [categories, setCategories] = useState([]);
+  const [recent, setRecent] = useState([]);
+  const [totalListings, setTotalListings] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      getCategories().catch(() => []),
+      getListings({ limit: 8, sort: 'newest' }).catch(() => ({ listings: [], pagination: { total: 0 } })),
+    ]).then(([cats, data]) => {
+      setCategories(cats);
+      setRecent(data.listings);
+      setTotalListings(data.pagination?.total || 0);
+      setLoading(false);
+    });
+  }, []);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -28,70 +43,41 @@ export default function Home() {
 
   return (
     <div>
-      {/* Hero with background image */}
+      {/* Hero */}
       <section className="relative overflow-hidden">
-        {/* Background */}
         <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1555861496-0666c8981751?w=1920&q=80"
-            alt=""
-            className="w-full h-full object-cover"
-          />
+          <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1920&q=80" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-primary-900/85 via-primary-800/80 to-primary-900/90" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 text-center">
-          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-3 leading-tight drop-shadow-lg">
-            {t('home.hero')}
-          </h1>
-          <p className="text-primary-100/80 text-lg md:text-xl max-w-2xl mx-auto mb-8">
-            {t('home.heroSub')}
-          </p>
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-3 leading-tight drop-shadow-lg">{t('home.hero')}</h1>
+          <p className="text-primary-100/80 text-lg md:text-xl max-w-2xl mx-auto mb-8">{t('home.heroSub')}</p>
 
-          {/* Search bar */}
           <div className="max-w-2xl mx-auto">
             <div className="bg-white rounded-2xl shadow-2xl p-2 flex flex-col sm:flex-row gap-2">
               <div className="flex-1 relative">
                 <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={isEn ? 'What are you looking for?' : 'Çfarë po kërkoni?'}
+                <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={isEn ? 'What are you looking for?' : 'Çfarë po kërkoni?'}
                   className="w-full pl-11 pr-4 py-3.5 rounded-xl text-gray-900 bg-gray-50 text-sm focus:outline-none focus:bg-gray-100 transition"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                />
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
               </div>
               <div className="relative">
                 <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full sm:w-44 pl-9 pr-3 py-3.5 rounded-xl text-sm text-gray-600 bg-gray-50 focus:outline-none appearance-none cursor-pointer"
-                >
+                <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full sm:w-44 pl-9 pr-3 py-3.5 rounded-xl text-sm text-gray-600 bg-gray-50 focus:outline-none appearance-none cursor-pointer">
                   <option value="">{isEn ? 'All Albania' : 'Gjithë Shqipërinë'}</option>
                   {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <button
-                onClick={handleSearch}
-                className="bg-primary-600 text-white px-8 py-3.5 rounded-xl font-medium hover:bg-primary-700 transition text-sm shrink-0"
-              >
+              <button onClick={handleSearch} className="bg-primary-600 text-white px-8 py-3.5 rounded-xl font-medium hover:bg-primary-700 transition text-sm shrink-0">
                 {isEn ? 'Search' : 'Kërko'}
               </button>
             </div>
 
-            {/* Popular searches */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
               <span className="text-primary-200/60 text-xs">{isEn ? 'Popular:' : 'Popullore:'}</span>
               {POPULAR_SEARCHES.map(s => (
-                <button
-                  key={s}
-                  onClick={() => { setSearch(s); navigate(`/listings?search=${s}`); }}
-                  className="text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition backdrop-blur-sm"
-                >
-                  {s}
-                </button>
+                <button key={s} onClick={() => navigate(`/listings?search=${s}`)} className="text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition backdrop-blur-sm">{s}</button>
               ))}
             </div>
           </div>
@@ -101,11 +87,11 @@ export default function Home() {
       {/* Stats */}
       <section className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-around text-center">
-          <div><p className="text-2xl font-bold text-primary-700">{MOCK_LISTINGS.length}+</p><p className="text-xs text-gray-400">{isEn ? 'Listings' : 'Njoftime'}</p></div>
+          <div><p className="text-2xl font-bold text-primary-700">{totalListings}</p><p className="text-xs text-gray-400">{isEn ? 'Listings' : 'Njoftime'}</p></div>
           <div className="w-px h-8 bg-gray-200" />
-          <div><p className="text-2xl font-bold text-primary-700">9</p><p className="text-xs text-gray-400">{isEn ? 'Cities' : 'Qytete'}</p></div>
+          <div><p className="text-2xl font-bold text-primary-700">{CITIES.length}</p><p className="text-xs text-gray-400">{isEn ? 'Cities' : 'Qytete'}</p></div>
           <div className="w-px h-8 bg-gray-200" />
-          <div><p className="text-2xl font-bold text-primary-700">10</p><p className="text-xs text-gray-400">{isEn ? 'Categories' : 'Kategori'}</p></div>
+          <div><p className="text-2xl font-bold text-primary-700">{categories.length}</p><p className="text-xs text-gray-400">{isEn ? 'Categories' : 'Kategori'}</p></div>
         </div>
       </section>
 
@@ -113,35 +99,21 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('nav.categories')}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          {CATEGORIES.map(({ slug, name_sq, name_en }) => {
-            const Icon = CAT_ICONS[slug] || MoreHorizontal;
-            const color = CAT_COLORS[slug] || CAT_COLORS.other;
-            const count = MOCK_LISTINGS.filter(l => l.category?.slug === slug).length;
+          {categories.map((cat) => {
+            const Icon = CAT_ICONS[cat.slug] || MoreHorizontal;
+            const color = CAT_COLORS[cat.slug] || CAT_COLORS.other;
             return (
-              <Link key={slug} to={`/listings/${slug}`} className="flex flex-col items-center gap-2.5 p-4 bg-white rounded-2xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all group">
+              <Link key={cat.id} to={`/listings/${cat.slug}`} className="flex flex-col items-center gap-2.5 p-4 bg-white rounded-2xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all group">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color} group-hover:scale-110 transition-transform`}>
                   <Icon size={22} />
                 </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-primary-700">{isEn ? name_en : name_sq}</span>
-                <span className="text-[11px] text-gray-400">{count} {isEn ? 'ads' : 'njoftime'}</span>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-primary-700">{isEn ? cat.name_en : cat.name_sq}</span>
+                <span className="text-[11px] text-gray-400">{cat._count?.listings || 0} {isEn ? 'ads' : 'njoftime'}</span>
               </Link>
             );
           })}
         </div>
       </section>
-
-      {/* Trending */}
-      {featured.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-          <div className="flex items-center gap-2 mb-5">
-            <TrendingUp size={20} className="text-accent-500" />
-            <h2 className="text-xl font-bold text-gray-900">{t('home.trending')}</h2>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {featured.map(l => <ListingCard key={l.id} listing={l} />)}
-          </div>
-        </section>
-      )}
 
       {/* Recent */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
@@ -151,9 +123,27 @@ export default function Home() {
             {t('home.viewAll')} <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {recent.map(l => <ListingCard key={l.id} listing={l} />)}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <div className="aspect-[4/3] bg-gray-100 animate-pulse" />
+                <div className="p-3 space-y-2"><div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" /><div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" /></div>
+              </div>
+            ))}
+          </div>
+        ) : recent.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-400">{isEn ? 'No listings yet. Be the first to post!' : 'Nuk ka njoftime akoma. Bëhu i pari që poston!'}</p>
+            <Link to="/post" className="inline-block mt-4 bg-primary-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-700 transition">
+              {t('nav.postAd')}
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {recent.map(l => <ListingCard key={l.id} listing={l} />)}
+          </div>
+        )}
       </section>
     </div>
   );
