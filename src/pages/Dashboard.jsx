@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Package, Heart, MessageSquare, User, Plus, Trash2, Edit, Eye, Camera, LogOut } from 'lucide-react';
 import { MOCK_LISTINGS, MOCK_MESSAGES } from '../data/mockData';
 import useAuthStore from '../store/authStore';
+import Avatar from '../components/Avatar';
 import { formatPrice, timeAgo } from '../utils/formatters';
 import ListingCard from '../components/ListingCard';
 import toast from 'react-hot-toast';
@@ -32,7 +33,7 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <img src={user?.avatar || `https://i.pravatar.cc/150?u=${user?.email}`} alt="" className="w-12 h-12 rounded-full object-cover" />
+            <Avatar src={user?.avatar} name={user?.name} size="md" />
             <div>
               <h1 className="text-xl font-bold text-gray-900">{user?.name}</h1>
               <p className="text-sm text-gray-400">{user?.email}</p>
@@ -169,7 +170,7 @@ function ProfileTab({ isEn, user, updateUser, logout, navigate }) {
         {/* Avatar */}
         <div className="flex items-center gap-4">
           <div className="relative">
-            <img src={user?.avatar || `https://i.pravatar.cc/150?u=${user?.email}`} alt="" className="w-16 h-16 rounded-full object-cover" />
+            <Avatar src={user?.avatar} name={user?.name} size="lg" />
             <button onClick={() => avatarRef.current?.click()} className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white hover:bg-primary-700 transition">
               <Camera size={14} />
             </button>

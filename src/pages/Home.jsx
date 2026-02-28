@@ -1,48 +1,106 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { Search, Car, Home as HomeIcon, Smartphone, Sofa, Shirt, Briefcase, Wrench, PawPrint, Dumbbell, MoreHorizontal, ArrowRight, TrendingUp, Users, Package } from 'lucide-react';
-import { MOCK_LISTINGS, CATEGORIES } from '../data/mockData';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Car, Home as HomeIcon, Smartphone, Sofa, Shirt, Briefcase, Wrench, PawPrint, Dumbbell, MoreHorizontal, ArrowRight, TrendingUp, MapPin } from 'lucide-react';
+import { MOCK_LISTINGS, CATEGORIES, CITIES } from '../data/mockData';
 import ListingCard from '../components/ListingCard';
 import { useState } from 'react';
 
 const CAT_ICONS = { vehicles: Car, properties: HomeIcon, electronics: Smartphone, furniture: Sofa, fashion: Shirt, jobs: Briefcase, services: Wrench, pets: PawPrint, sports: Dumbbell, other: MoreHorizontal };
 const CAT_COLORS = { vehicles: 'bg-blue-50 text-blue-600', properties: 'bg-amber-50 text-amber-600', electronics: 'bg-violet-50 text-violet-600', furniture: 'bg-emerald-50 text-emerald-600', fashion: 'bg-pink-50 text-pink-600', jobs: 'bg-cyan-50 text-cyan-600', services: 'bg-orange-50 text-orange-600', pets: 'bg-lime-50 text-lime-600', sports: 'bg-rose-50 text-rose-600', other: 'bg-gray-100 text-gray-600' };
 
+const POPULAR_SEARCHES = ['iPhone', 'Mercedes', 'Apartament Tiranë', 'PS5', 'Punë', 'Biçikletë'];
+
 export default function Home() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language === 'en';
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [city, setCity] = useState('');
   const recent = MOCK_LISTINGS.slice(0, 8);
   const featured = MOCK_LISTINGS.filter(l => l.views > 200).slice(0, 4);
 
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (city) params.set('city', city);
+    navigate(`/listings?${params.toString()}`);
+  };
+
   return (
     <div>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent-500 rounded-full blur-3xl" />
+      {/* Hero with background image */}
+      <section className="relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1555861496-0666c8981751?w=1920&q=80"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary-900/85 via-primary-800/80 to-primary-900/90" />
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center relative z-10">
-          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">{t('home.hero')}</h1>
-          <p className="text-primary-100 text-lg md:text-xl max-w-2xl mx-auto mb-8">{t('home.heroSub')}</p>
-          <div className="max-w-xl mx-auto relative">
-            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('nav.search')}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl text-gray-900 bg-white shadow-xl text-base focus:outline-none focus:ring-4 focus:ring-primary-300/30"
-              onKeyDown={(e) => e.key === 'Enter' && search && (window.location.href = `/listings?search=${search}`)}
-            />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 text-center">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-3 leading-tight drop-shadow-lg">
+            {t('home.hero')}
+          </h1>
+          <p className="text-primary-100/80 text-lg md:text-xl max-w-2xl mx-auto mb-8">
+            {t('home.heroSub')}
+          </p>
+
+          {/* Search bar */}
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-2xl p-2 flex flex-col sm:flex-row gap-2">
+              <div className="flex-1 relative">
+                <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={isEn ? 'What are you looking for?' : 'Çfarë po kërkoni?'}
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl text-gray-900 bg-gray-50 text-sm focus:outline-none focus:bg-gray-100 transition"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
+              </div>
+              <div className="relative">
+                <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full sm:w-44 pl-9 pr-3 py-3.5 rounded-xl text-sm text-gray-600 bg-gray-50 focus:outline-none appearance-none cursor-pointer"
+                >
+                  <option value="">{isEn ? 'All Albania' : 'Gjithë Shqipërinë'}</option>
+                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <button
+                onClick={handleSearch}
+                className="bg-primary-600 text-white px-8 py-3.5 rounded-xl font-medium hover:bg-primary-700 transition text-sm shrink-0"
+              >
+                {isEn ? 'Search' : 'Kërko'}
+              </button>
+            </div>
+
+            {/* Popular searches */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+              <span className="text-primary-200/60 text-xs">{isEn ? 'Popular:' : 'Popullore:'}</span>
+              {POPULAR_SEARCHES.map(s => (
+                <button
+                  key={s}
+                  onClick={() => { setSearch(s); navigate(`/listings?search=${s}`); }}
+                  className="text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition backdrop-blur-sm"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Stats */}
       <section className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-around text-center">
+        <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-around text-center">
           <div><p className="text-2xl font-bold text-primary-700">{MOCK_LISTINGS.length}+</p><p className="text-xs text-gray-400">{isEn ? 'Listings' : 'Njoftime'}</p></div>
           <div className="w-px h-8 bg-gray-200" />
           <div><p className="text-2xl font-bold text-primary-700">9</p><p className="text-xs text-gray-400">{isEn ? 'Cities' : 'Qytete'}</p></div>

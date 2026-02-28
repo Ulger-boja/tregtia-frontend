@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Upload, X, ChevronRight, ChevronLeft, Check, MapPin, Tag, Camera, FileText, Eye } from 'lucide-react';
@@ -32,12 +32,12 @@ export default function PostListing() {
   const update = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const activeCat = CATEGORIES.find(c => c.id === form.categoryId);
 
-  const handleFiles = useCallback((files) => {
-    const valid = Array.from(files).filter(f => ['image/jpeg', 'image/png', 'image/webp'].includes(f.type));
+  const handleFiles = (files) => {
+    const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
     const remaining = 10 - form.images.length;
     const toAdd = valid.slice(0, remaining).map(file => ({ file, url: URL.createObjectURL(file), name: file.name }));
-    update('images', [...form.images, ...toAdd]);
-  }, [form.images]);
+    if (toAdd.length > 0) setForm(prev => ({ ...prev, images: [...prev.images, ...toAdd] }));
+  };
 
   const removeImage = (i) => update('images', form.images.filter((_, idx) => idx !== i));
 
