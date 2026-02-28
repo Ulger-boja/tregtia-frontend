@@ -29,9 +29,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14 gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">T</span>
-            </div>
+            <img src="/logo-handshake.jpg" alt="Tregtia" className="w-8 h-8 rounded-lg object-contain" />
             <span className="text-xl font-bold text-gray-900 hidden sm:block">Tregtia</span>
           </Link>
 
