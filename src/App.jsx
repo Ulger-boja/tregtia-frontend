@@ -13,6 +13,7 @@ const PostListing = lazy(() => import('./pages/PostListing'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const Favorites = lazy(() => import('./pages/Favorites'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function PageLoader() {
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/listings/:category" element={<Listings />} />
             <Route path="/listing/:id" element={<ListingDetail />} />
             <Route path="/post" element={<PostListing />} />
+            <Route path="/favorites" element={<Favorites />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
