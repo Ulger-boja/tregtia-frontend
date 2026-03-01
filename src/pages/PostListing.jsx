@@ -40,16 +40,15 @@ export default function PostListing() {
     negotiable: false, exchange: false, city: 'Tiranë', neighborhood: '', address: '', images: [],
     // Vehicle fields
     make: '', model: '', variant: '', year: '', fuel: '', gearbox: '', km: '',
+    // Guest fields
+    guestName: '', guestPhone: '',
   });
+
+  const isGuest = !isAuthenticated;
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => {});
   }, []);
-
-  if (!isAuthenticated) {
-    navigate('/login');
-    return null;
-  }
 
   const update = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const activeCat = categories.find(c => c.id === form.categoryId);
@@ -73,6 +72,8 @@ export default function PostListing() {
     if (step === 1) {
       if (form.title.trim().length < 5) return toast.error(isEn ? 'Title too short' : 'Titulli shumë i shkurtër');
       if (form.description.trim().length < 10) return toast.error(isEn ? 'Description too short' : 'Përshkrimi shumë i shkurtër');
+      if (isGuest && !form.guestName.trim()) return toast.error(isEn ? 'Name is required' : 'Emri është i detyrueshëm');
+      if (isGuest && !form.guestPhone.trim()) return toast.error(isEn ? 'Phone is required' : 'Telefoni është i detyrueshëm');
     }
     if (step === 2 && form.images.length === 0) return toast.error(isEn ? 'Add at least 1 photo' : 'Shtoni të paktën 1 foto');
     setStep(s => Math.min(s + 1, STEPS.length - 1));
@@ -93,13 +94,28 @@ export default function PostListing() {
       if (form.neighborhood) fd.append('neighborhood', form.neighborhood);
       if (form.address) fd.append('address', form.address);
       // Vehicle attributes
+      const attrs = {};
       if (isVehicleCat && form.make) {
-        const attrs = { make: form.make, model: form.model, variant: form.variant, year: form.year, fuel: form.fuel, gearbox: form.gearbox, km: form.km };
-        fd.append('attributes', JSON.stringify(attrs));
+        Object.assign(attrs, { make: form.make, model: form.model, variant: form.variant, year: form.year, fuel: form.fuel, gearbox: form.gearbox, km: form.km });
       }
+      // Guest contact info
+      if (isGuest) {
+        attrs.guestName = form.guestName;
+        attrs.guestPhone = form.guestPhone;
+        fd.append('guestName', form.guestName);
+        fd.append('guestPhone', form.guestPhone);
+      }
+      if (Object.keys(attrs).length) fd.append('attributes', JSON.stringify(attrs));
       form.images.forEach(img => { if (img.file) fd.append('images', img.file); });
 
-      const listing = await createListing(fd);
+      let listing;
+      if (isGuest) {
+        // Use guest endpoint
+        const res = await import('../api').then(m => m.default.post('/listings/guest', fd, { headers: { 'Content-Type': 'multipart/form-data' } }));
+        listing = res.data.data?.listing || res.data.data;
+      } else {
+        listing = await createListing(fd);
+      }
       toast.success(isEn ? 'Listing published!' : 'Njoftimi u publikua!');
       navigate(`/listing/${listing.id}`);
     } catch (err) {
@@ -260,6 +276,26 @@ export default function PostListing() {
                   <span className="text-sm text-gray-600">{isEn ? 'Exchange possible' : 'Mundësi shkëmbimi'}</span>
                 </label>
               </div>
+
+              {/* Guest contact info */}
+              {isGuest && (
+                <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-100 space-y-3">
+                  <p className="text-sm font-semibold text-amber-800">{isEn ? 'Your Contact Info' : 'Informacioni juaj i kontaktit'}</p>
+                  <p className="text-xs text-amber-600">{isEn ? 'Since you\'re posting as a guest, add your contact details so buyers can reach you.' : 'Meqë po postoni si vizitor, shtoni detajet e kontaktit që blerësit t\'ju gjejnë.'}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Your Name' : 'Emri juaj'} *</label>
+                      <input type="text" value={form.guestName} onChange={e => update('guestName', e.target.value)} placeholder={isEn ? 'Name' : 'Emri'}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Phone Number' : 'Nr. Telefonit'} *</label>
+                      <input type="tel" value={form.guestPhone} onChange={e => update('guestPhone', e.target.value)} placeholder="+355 6X XXX XXXX"
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -338,6 +374,18 @@ export default function PostListing() {
                   <span className="text-gray-400">{isEn ? 'Photos' : 'Foto'}</span>
                   <span className="font-medium">{form.images.length}</span>
                 </div>
+                {isGuest && (
+                  <>
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-400">{isEn ? 'Contact Name' : 'Emri'}</span>
+                      <span className="font-medium">{form.guestName}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-400">{isEn ? 'Phone' : 'Telefoni'}</span>
+                      <span className="font-medium">{form.guestPhone}</span>
+                    </div>
+                  </>
+                )}
                 {form.images.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto py-2">
                     {form.images.slice(0, 5).map((img, i) => (
