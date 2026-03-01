@@ -23,7 +23,7 @@ export default function MobileNav() {
           const active = pathname === to;
           if (accent) {
             return (
-              <Link key={key} to={isAuthenticated ? to : '/login'} className="flex flex-col items-center -mt-5">
+              <Link key={key} to={to} className="flex flex-col items-center -mt-5">
                 <div className="w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <Icon size={22} className="text-white" />
                 </div>
