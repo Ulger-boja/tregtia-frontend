@@ -149,6 +149,29 @@ export default function ListingDetail() {
                 {listing.negotiable && <span className="bg-accent-500/10 text-accent-600 text-xs font-medium px-3 py-1.5 rounded-lg">{isEn ? 'Negotiable' : 'I diskutueshëm'}</span>}
                 {listing.exchange && <span className="bg-primary-50 text-primary-600 text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1"><RefreshCw size={12} />{isEn ? 'Exchange' : 'Shkëmbim'}</span>}
               </div>
+              {/* Vehicle attributes */}
+              {listing.attributes?.make && (
+                <div className="border-t border-gray-100 pt-4 mb-4">
+                  <h2 className="font-semibold text-gray-800 mb-3">{isEn ? 'Vehicle Details' : 'Detajet e automjetit'}</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { label: isEn ? 'Make' : 'Marka', value: listing.attributes.make },
+                      { label: isEn ? 'Model' : 'Modeli', value: listing.attributes.model },
+                      { label: isEn ? 'Variant' : 'Varianti', value: listing.attributes.variant },
+                      { label: isEn ? 'Year' : 'Viti', value: listing.attributes.year },
+                      { label: isEn ? 'Fuel' : 'Karburanti', value: listing.attributes.fuel && ({petrol: isEn?'Petrol':'Benzinë', diesel: isEn?'Diesel':'Naftë', gas: 'LPG/Gas', electric: isEn?'Electric':'Elektrik', hybrid: 'Hybrid'}[listing.attributes.fuel] || listing.attributes.fuel) },
+                      { label: isEn ? 'Gearbox' : 'Kambio', value: listing.attributes.gearbox && ({manual: isEn?'Manual':'Manuale', automatic: isEn?'Automatic':'Automatike'}[listing.attributes.gearbox] || listing.attributes.gearbox) },
+                      { label: isEn ? 'Mileage' : 'Kilometrazhi', value: listing.attributes.km && `${Number(listing.attributes.km).toLocaleString()} km` },
+                    ].filter(x => x.value).map((item, i) => (
+                      <div key={i} className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-[11px] text-gray-400 uppercase tracking-wide">{item.label}</p>
+                        <p className="text-sm font-semibold text-gray-800 mt-0.5">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-gray-100 pt-4">
                 <h2 className="font-semibold text-gray-800 mb-2">{isEn ? 'Description' : 'Përshkrimi'}</h2>
                 <p className="text-gray-600 leading-relaxed whitespace-pre-line">{listing.description}</p>

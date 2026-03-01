@@ -47,6 +47,13 @@ export default function ListingCard({ listing }) {
       </div>
       <div className="p-3">
         <h3 className="font-medium text-gray-900 text-sm line-clamp-2 leading-snug mb-1.5 group-hover:text-primary-700 transition-colors">{listing.title}</h3>
+        {listing.attributes?.make && (
+          <div className="flex flex-wrap gap-1 mb-1.5">
+            {listing.attributes.year && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{listing.attributes.year}</span>}
+            {listing.attributes.fuel && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{listing.attributes.fuel}</span>}
+            {listing.attributes.km && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{Number(listing.attributes.km).toLocaleString()} km</span>}
+          </div>
+        )}
         <div className="flex items-center justify-between text-xs text-gray-400">
           <span className="flex items-center gap-1"><MapPin size={12} />{listing.city}</span>
           <span className="flex items-center gap-1"><Eye size={12} />{listing.views || 0}</span>
