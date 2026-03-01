@@ -100,6 +100,12 @@ export const getFavorites = async () => {
   return favs.map(f => f.listing || f);
 };
 
+// --- Reports ---
+export const reportListing = async (data) => {
+  const res = await api.post('/reports', data);
+  return res.data.data;
+};
+
 // --- Categories ---
 export const getCategories = async () => {
   const res = await api.get('/categories');
