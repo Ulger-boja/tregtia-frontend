@@ -3,11 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Upload, X, ChevronRight, ChevronLeft, Check, MapPin, Tag, Camera, FileText, Eye } from 'lucide-react';
 import { CITIES } from '../data/mockData';
+import { VEHICLES, VEHICLE_BRANDS } from '../data/vehicles';
 import { formatPrice } from '../utils/formatters';
 import { getCategories, createListing } from '../api';
 import useAuthStore from '../store/authStore';
 import toast from 'react-hot-toast';
 import { useEffect } from 'react';
+
+const FUEL_TYPES = [
+  { value: 'petrol', en: 'Petrol', sq: 'Benzinë' },
+  { value: 'diesel', en: 'Diesel', sq: 'Naftë' },
+  { value: 'gas', en: 'LPG / Gas', sq: 'Gaz' },
+  { value: 'electric', en: 'Electric', sq: 'Elektrik' },
+  { value: 'hybrid', en: 'Hybrid', sq: 'Hibrid' },
+];
+const GEARBOX = [
+  { value: 'manual', en: 'Manual', sq: 'Manuale' },
+  { value: 'automatic', en: 'Automatic', sq: 'Automatike' },
+];
 
 const STEPS = ['category', 'details', 'photos', 'location', 'review'];
 const STEP_ICONS = [Tag, FileText, Camera, MapPin, Eye];
@@ -25,6 +38,8 @@ export default function PostListing() {
   const [form, setForm] = useState({
     categoryId: '', subcategoryId: '', title: '', description: '', price: '', currency: 'ALL',
     negotiable: false, exchange: false, city: 'Tiranë', neighborhood: '', address: '', images: [],
+    // Vehicle fields
+    make: '', model: '', variant: '', year: '', fuel: '', gearbox: '', km: '',
   });
 
   useEffect(() => {
@@ -38,6 +53,11 @@ export default function PostListing() {
 
   const update = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const activeCat = categories.find(c => c.id === form.categoryId);
+  const isVehicleCat = activeCat?.slug === 'vehicles';
+  const models = form.make ? Object.keys(VEHICLES[form.make] || {}) : [];
+  const variants = (form.make && form.model) ? (VEHICLES[form.make]?.[form.model] || []) : [];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 40 }, (_, i) => currentYear - i);
 
   const handleFiles = (files) => {
     const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
@@ -72,6 +92,11 @@ export default function PostListing() {
       fd.append('exchange', form.exchange);
       if (form.neighborhood) fd.append('neighborhood', form.neighborhood);
       if (form.address) fd.append('address', form.address);
+      // Vehicle attributes
+      if (isVehicleCat && form.make) {
+        const attrs = { make: form.make, model: form.model, variant: form.variant, year: form.year, fuel: form.fuel, gearbox: form.gearbox, km: form.km };
+        fd.append('attributes', JSON.stringify(attrs));
+      }
       form.images.forEach(img => { if (img.file) fd.append('images', img.file); });
 
       const listing = await createListing(fd);
@@ -146,6 +171,72 @@ export default function PostListing() {
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">{isEn ? 'Description' : 'Përshkrimi'} *</label>
                 <textarea value={form.description} onChange={(e) => update('description', e.target.value)} rows={5} placeholder={isEn ? 'Describe your item in detail...' : 'Përshkruani artikullin në detaje...'} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500 resize-none" />
               </div>
+              {/* Vehicle-specific fields */}
+              {isVehicleCat && (
+                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-3">
+                  <p className="text-sm font-semibold text-blue-800">{isEn ? 'Vehicle Details' : 'Detajet e automjetit'}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Make' : 'Marka'} *</label>
+                      <select value={form.make} onChange={e => { update('make', e.target.value); update('model', ''); update('variant', ''); }}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500">
+                        <option value="">{isEn ? 'Select make' : 'Zgjidh markën'}</option>
+                        {VEHICLE_BRANDS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Model' : 'Modeli'}</label>
+                      <select value={form.model} onChange={e => { update('model', e.target.value); update('variant', ''); }} disabled={!form.make}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500 disabled:opacity-40">
+                        <option value="">{isEn ? 'Select model' : 'Zgjidh modelin'}</option>
+                        {models.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  {variants.length > 0 && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Variant' : 'Varianti'}</label>
+                      <select value={form.variant} onChange={e => update('variant', e.target.value)}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500">
+                        <option value="">{isEn ? 'Select variant' : 'Zgjidh variantin'}</option>
+                        {variants.map(v => <option key={v} value={v}>{v}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Year' : 'Viti'}</label>
+                      <select value={form.year} onChange={e => update('year', e.target.value)}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500">
+                        <option value="">{isEn ? 'Year' : 'Viti'}</option>
+                        {years.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Fuel' : 'Karburanti'}</label>
+                      <select value={form.fuel} onChange={e => update('fuel', e.target.value)}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500">
+                        <option value="">{isEn ? 'Fuel' : 'Karburanti'}</option>
+                        {FUEL_TYPES.map(f => <option key={f.value} value={f.value}>{isEn ? f.en : f.sq}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Gearbox' : 'Kambio'}</label>
+                      <select value={form.gearbox} onChange={e => update('gearbox', e.target.value)}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500">
+                        <option value="">{isEn ? 'Gearbox' : 'Kambio'}</option>
+                        {GEARBOX.map(g => <option key={g.value} value={g.value}>{isEn ? g.en : g.sq}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">{isEn ? 'Mileage (km)' : 'Kilometrazhi (km)'}</label>
+                    <input type="number" value={form.km} onChange={e => update('km', e.target.value)} placeholder="e.g. 150000"
+                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500" />
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1.5 block">{isEn ? 'Price' : 'Çmimi'}</label>
